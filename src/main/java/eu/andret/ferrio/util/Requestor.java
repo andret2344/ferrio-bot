@@ -1,4 +1,4 @@
-package eu.andret.ads.ferrio.util;
+package eu.andret.ferrio.util;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -8,9 +8,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 public class Requestor {
+	private static final Duration TIMEOUT = Duration.ofSeconds(10);
+
 	private final HttpClient client = HttpClient.newHttpClient();
 	private final Gson gson = new Gson();
 
@@ -18,9 +21,14 @@ public class Requestor {
 	public <T> CompletableFuture<T> executeRequest(@NotNull final String url, @NotNull final TypeToken<T> typeToken) {
 		final HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create(url))
+				.timeout(TIMEOUT)
 				.build();
 		return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-				.thenApply(HttpResponse::body)
-				.thenApply(responseBody -> gson.fromJson(responseBody, typeToken));
+				.thenApply(response -> {
+					if (response.statusCode() != 200) {
+						throw new IllegalStateException(String.format("Request to %s failed with status %d", url, response.statusCode()));
+					}
+					return gson.fromJson(response.body(), typeToken);
+				});
 	}
 }

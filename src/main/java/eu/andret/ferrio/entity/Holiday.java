@@ -1,4 +1,4 @@
-package eu.andret.ads.ferrio.entity;
+package eu.andret.ferrio.entity;
 
 import org.jetbrains.annotations.NotNull;
 

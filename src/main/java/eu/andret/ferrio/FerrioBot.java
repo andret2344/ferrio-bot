@@ -1,7 +1,7 @@
-package eu.andret.ads.ferrio;
+package eu.andret.ferrio;
 
-import eu.andret.ads.ferrio.command.FerrioCommand;
-import eu.andret.ads.ferrio.util.Requestor;
+import eu.andret.ferrio.command.FerrioCommand;
+import eu.andret.ferrio.util.Requestor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -12,23 +12,28 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
-import java.util.Properties;
 
 public final class FerrioBot {
-	private static final Requestor REQUESTOR = new Requestor();
+	private static final String TOKEN_VARIABLE = "FERRIO_TOKEN";
+	private static final String LOG_LEVEL_VARIABLE = "FERRIO_LOG_LEVEL";
+	private static final Logger LOGGER = LoggerFactory.getLogger(FerrioBot.class);
 
-	public static void main(final String[] args) throws IOException {
-		final Properties properties = loadProperties();
-		Configurator.setRootLevel(Level.toLevel(properties.getProperty("logger.level"), Level.INFO));
+	public static void main(final String[] args) {
+		Configurator.setRootLevel(Level.toLevel(System.getenv(LOG_LEVEL_VARIABLE), Level.INFO));
 
-		final JDA jda = JDABuilder.createLight(properties.getProperty("app.token"), Collections.emptyList())
+		final String token = System.getenv(TOKEN_VARIABLE);
+		if (token == null || token.isBlank()) {
+			LOGGER.error("Missing the {} environment variable", TOKEN_VARIABLE);
+			System.exit(1);
+		}
+
+		final JDA jda = JDABuilder.createLight(token, Collections.emptyList())
 				.setStatus(OnlineStatus.DO_NOT_DISTURB)
-				.addEventListeners(new FerrioCommand(REQUESTOR))
+				.addEventListeners(new FerrioCommand(new Requestor()))
 				.build();
 
 		jda.updateCommands()
@@ -40,13 +45,5 @@ public final class FerrioBot {
 										.addChoice("English", "en"))
 								.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VIEW_CHANNEL)))
 				.queue();
-	}
-
-	@NotNull
-	private static Properties loadProperties() throws IOException {
-		final InputStream config = ClassLoader.getSystemClassLoader().getResourceAsStream("config.properties");
-		final Properties properties = new Properties();
-		properties.load(config);
-		return properties;
 	}
 }

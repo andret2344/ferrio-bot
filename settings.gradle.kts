@@ -1,1 +1,1 @@
-rootProject.name = "ads-ferrio-bot"
+rootProject.name = "ferrio-bot"

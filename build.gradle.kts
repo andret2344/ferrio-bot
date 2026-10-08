@@ -1,53 +1,51 @@
 plugins {
-    java
-    idea
-    application
+	java
+	application
 }
 
 repositories {
-    mavenCentral()
-}
-
-application {
-    mainClass.set("eu.andret.ads.ferrio.FerrioBot")
+	mavenCentral()
 }
 
 dependencies {
-    implementation(libs.jda)
-    implementation(libs.gson)
-    // logging
-    implementation(libs.slf4j.api)
-    implementation(libs.log4j.slf4j.impl)
-    implementation(libs.log4j.core)
-    // testing
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testRuntimeOnly(libs.junit.platform.launcher)
+	implementation(libs.jda) {
+		// Audio encoding and encryption, the bot never joins voice channels
+		exclude(module = "opus-java")
+		exclude(module = "tink")
+	}
+	implementation(libs.gson)
+	// logging
+	implementation(libs.slf4j.api)
+	implementation(libs.log4j.core)
+	runtimeOnly(libs.log4j.slf4j.impl)
+	// testing
+	testImplementation(platform(libs.junit.bom))
+	testImplementation(libs.junit.jupiter)
+	testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 application {
-    mainClass.set("eu.andret.ads.ferrio.FerrioBot")
+	mainClass = "eu.andret.ferrio.FerrioBot"
 }
 
 tasks {
-    compileJava {
-        sourceCompatibility = JavaVersion.VERSION_25.toString()
-        targetCompatibility = JavaVersion.VERSION_25.toString()
-    }
+	compileJava {
+		options.release = 25
+	}
 
-    test {
-        useJUnitPlatform()
-    }
+	test {
+		useJUnitPlatform()
+	}
 
-    jar {
-        duplicatesStrategy = DuplicatesStrategy.WARN
+	jar {
+		duplicatesStrategy = DuplicatesStrategy.WARN
 
-        from({
-            configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
-        })
+		from({
+			configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+		})
 
-        manifest {
-            attributes["Main-Class"] = application.mainClass.get()
-        }
-    }
+		manifest {
+			attributes["Main-Class"] = application.mainClass
+		}
+	}
 }

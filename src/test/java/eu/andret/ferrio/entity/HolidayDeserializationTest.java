@@ -1,4 +1,4 @@
-package eu.andret.ads.ferrio.entity;
+package eu.andret.ferrio.entity;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -50,7 +50,7 @@ class HolidayDeserializationTest {
 
 		assertEquals(2, holidays.size());
 
-		final Holiday first = holidays.get(0);
+		final Holiday first = holidays.getFirst();
 		assertEquals("fixed-1", first.id());
 		assertEquals(4, first.day());
 		assertEquals(5, first.month());
@@ -89,6 +89,6 @@ class HolidayDeserializationTest {
 		final List<Holiday> holidays = gson.fromJson(json, HOLIDAY_LIST_TYPE);
 
 		assertEquals(1, holidays.size());
-		assertEquals("fixed-9", holidays.get(0).id());
+		assertEquals("fixed-9", holidays.getFirst().id());
 	}
 }
